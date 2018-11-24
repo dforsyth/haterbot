@@ -15,9 +15,10 @@ mod handlers;
 fn main() {
     TermLogger::init(LevelFilter::Debug, Config::default()).unwrap();
 
-    let name = env::var("HBOT_NAME").expect("No username");
     let token = env::var("HBOT_SLACK_API_TOKEN").expect("No slack api token");
-    let icon = env::var("HBOT_ICON").expect("No icon");
+    let name = env::var("HBOT_NAME").unwrap_or("haterbot".to_string());
+    let icon = env::var("HBOT_ICON")
+        .unwrap_or("https://i.imgur.com/d4ddm4a.jpg".to_string());
 
     let config = bot::HaterBotConfig { name, icon, token };
 
