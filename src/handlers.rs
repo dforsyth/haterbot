@@ -1,10 +1,11 @@
 // use binance::{api::Binance, market::Market};
 
+use rand::{seq::SliceRandom, thread_rng};
 use reqwest;
 use serde_json;
 
 pub trait Handler {
-    fn handle(&self, syms: &[String]) -> String;
+    fn handle(&self, syms: &[String]) -> (String, Option<serde_json::Value>);
 }
 
 pub struct CryptoHandler {
@@ -42,7 +43,7 @@ impl CryptoHandler {
 }
 
 impl Handler for CryptoHandler {
-    fn handle(&self, syms: &[String]) -> String {
+    fn handle(&self, syms: &[String]) -> (String, Option<serde_json::Value>) {
         /*
         if syms.len() == 0 {
             return String::from(
@@ -73,7 +74,7 @@ impl Handler for CryptoHandler {
         
         response
         */
-        "Unsupported".to_string()
+        ("Unsupported".to_string(), None)
     }
 }
 
@@ -86,10 +87,10 @@ impl StocksHandler {
 }
 
 impl Handler for StocksHandler {
-    fn handle(&self, syms: &[String]) -> String {
+    fn handle(&self, syms: &[String]) -> (String, Option<serde_json::Value>) {
         let mut response = String::new();
         if syms.len() == 0 {
-            return response;
+            return (response, None);
         }
 
         for sym in syms {
@@ -127,7 +128,7 @@ impl Handler for StocksHandler {
             };
         }
 
-        response
+        (response, None)
     }
 }
 
@@ -140,7 +141,40 @@ impl BangHandler {
 }
 
 impl Handler for BangHandler {
-    fn handle(&self, _: &[String]) -> String {
-        String::from("bang bang")
+    fn handle(&self, _: &[String]) -> (String, Option<serde_json::Value>) {
+        (String::from("bang bang"), None)
+    }
+}
+
+pub struct RandomHandler {
+    phrases: Vec<String>,
+    images:  Vec<String>,
+}
+
+impl RandomHandler {
+    pub fn new(phrases: Vec<String>, images: Vec<String>) -> RandomHandler {
+        Self { phrases, images }
+    }
+}
+
+impl Handler for RandomHandler {
+    fn handle(&self, _: &[String]) -> (String, Option<serde_json::Value>) {
+        let mut rng = thread_rng();
+
+        let phrase = self.phrases.choose(&mut rng).unwrap().to_string();
+        let image = self.images.choose(&mut rng).unwrap().to_string();
+
+        let attachment = json!(
+            [
+                {
+                    "text": phrase,
+                    "image_url": image,
+                },
+            ]
+        );
+
+        info!("handler attachment: {:?}", attachment);
+
+        ("".to_string(), Some(attachment))
     }
 }

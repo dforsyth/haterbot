@@ -2,7 +2,9 @@
 #[macro_use]
 extern crate log;
 extern crate reqwest;
+#[macro_use]
 extern crate serde_json;
+extern crate rand;
 extern crate simplelog;
 extern crate slack;
 
@@ -26,6 +28,13 @@ fn main() {
     haterbot.add_command("crypto", Box::new(handlers::CryptoHandler::new()));
     haterbot.add_command("stocks", Box::new(handlers::StocksHandler::new()));
     haterbot.add_command("bang", Box::new(handlers::BangHandler::new()));
+    haterbot.add_command(
+        "timon",
+        Box::new(handlers::RandomHandler::new(
+            vec!["Yes officer, that post right there.".to_string()],
+            vec!["https://i.imgur.com/iOPRp0B.jpg".to_string()],
+        )),
+    );
 
     info!("Running bot");
     haterbot.run();

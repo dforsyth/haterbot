@@ -37,10 +37,15 @@ impl HaterBot {
             Message::Standard(message) => {
                 if let Some(parsed) = self.parse_command(message.text) {
                     match self.handle_command(parsed) {
-                        Ok(response) => {
-                            if response.len() > 0 {
+                        Ok((response, attachments)) => {
+                            if response.len() > 0 || attachments.is_some() {
                                 if let Some(channel) = message.channel {
-                                    self.send_message(channel, response);
+                                    info!("handle_message {:?}", attachments);
+                                    self.send_message(
+                                        channel,
+                                        response,
+                                        attachments,
+                                    );
                                 } else {
                                     error!("Missing channel.");
                                 }
@@ -71,21 +76,34 @@ impl HaterBot {
         }
     }
 
-    fn handle_command(&self, tokens: Vec<String>) -> Result<String, String> {
+    fn handle_command(
+        &self,
+        tokens: Vec<String>,
+    ) -> Result<(String, Option<serde_json::Value>), String> {
         let command = &tokens[0][1..];
         let args = &tokens[1..];
 
         if let Some(handler) = self.op_map.get(command) {
-            let response = handler.handle(args);
-            Ok(response)
+            let (response, attachments) = handler.handle(args);
+            Ok((response, attachments))
         } else {
             Err(format!("No handler for {}", command))
         }
     }
 
-    fn send_message(&self, channel: String, response: String) {
+    fn send_message(
+        &self,
+        channel: String,
+        response: String,
+        attachments: Option<serde_json::Value>,
+    ) {
         // TODO: Return something useful.
         debug!("Sending response to {}: {}", channel, response);
+        info!("attachments {:?}", attachments);
+
+        let _attachments = attachments.map(|v| v.to_string());
+        let _attachments = _attachments.as_ref().map(String::as_str);
+
         let _ = api::chat::post_message(
             &self.client,
             &self.token,
@@ -94,6 +112,7 @@ impl HaterBot {
                 text: response.as_str(),
                 username: Some(&self.name),
                 icon_url: Some(&self.icon),
+                attachments: _attachments,
                 ..api::chat::PostMessageRequest::default()
             },
         );

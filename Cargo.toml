@@ -17,5 +17,6 @@ serde = "1.0.80"
 serde_derive = "1.0.80"
 serde_json = "1.0.33"
 simplelog = "0.5.3"
+rand = "0.6.1"
 
 # binance = { git = "https://github.com/wisespace-io/binance-rs.git" }
