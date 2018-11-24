@@ -1,4 +1,4 @@
-extern crate binance;
+// extern crate binance;
 #[macro_use]
 extern crate log;
 extern crate reqwest;

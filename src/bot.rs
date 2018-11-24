@@ -8,25 +8,25 @@ use slack::{api, Event, EventHandler, Message, RtmClient};
 use handlers;
 
 pub struct HaterBot {
-    name: String,
-    icon: String,
-    token: String,
+    name:   String,
+    icon:   String,
+    token:  String,
     op_map: HashMap<&'static str, Box<handlers::Handler>>,
     client: api::requests::Client,
 }
 
 pub struct HaterBotConfig {
-    pub name: String,
-    pub icon: String,
+    pub name:  String,
+    pub icon:  String,
     pub token: String,
 }
 
 impl HaterBot {
     pub fn new(config: HaterBotConfig) -> HaterBot {
         HaterBot {
-            name: config.name,
-            icon: config.icon,
-            token: config.token,
+            name:   config.name,
+            icon:   config.icon,
+            token:  config.token,
             op_map: HashMap::new(),
             client: api::requests::default_client().unwrap(),
         }
@@ -47,11 +47,11 @@ impl HaterBot {
                             } else {
                                 debug!("No response");
                             }
-                        }
+                        },
                         Err(err) => error!("{:?}", err),
                     }
                 }
-            }
+            },
             _ => debug!("Unsupported message type"),
         };
     }
@@ -66,7 +66,7 @@ impl HaterBot {
                 let tokens = text.split(' ').map(|s| s.to_string()).collect();
                 info!("tokens: {:?}", tokens);
                 Some(tokens)
-            }
+            },
             _ => None,
         }
     }
@@ -101,10 +101,15 @@ impl HaterBot {
 
     pub fn run(&mut self) {
         let token = self.token.clone();
-        RtmClient::login_and_run(token.as_str(), self).expect("RTM client failed.");
+        RtmClient::login_and_run(token.as_str(), self)
+            .expect("RTM client failed.");
     }
 
-    pub fn add_command(&mut self, command: &'static str, handler: Box<handlers::Handler>) {
+    pub fn add_command(
+        &mut self,
+        command: &'static str,
+        handler: Box<handlers::Handler>,
+    ) {
         self.op_map.insert(command, handler);
     }
 }
@@ -120,7 +125,7 @@ impl EventHandler for HaterBot {
             Event::Message(m) => {
                 // Need nightly to match on box
                 self.handle_message(*m);
-            }
+            },
             _ => debug!("Unsupported event."),
         };
     }
